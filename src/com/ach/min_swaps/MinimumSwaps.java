@@ -1,8 +1,9 @@
 package com.ach.min_swaps;
 
-import javafx.util.Pair;
-
 import java.io.IOException;
+import java.util.Arrays;
+
+import static com.ach.min_swaps.MinMaxIndex.getMinAndMaxIndexes;
 
 /**
  * Created by antoniochavez on 15/09/2018.
@@ -29,9 +30,34 @@ public class MinimumSwaps {
         //Base case if the array is size 2 (Even number of elements) or size 3 (Odd number of elements)
         if (size == 2 || size == 3) {
             return baseCaseSwaps(arr);
+        } else {
+
+            // General case: Retrieve min and max info:
+            MinMaxIndex minMaxIndexes = getMinAndMaxIndexes(arr);
+            int maxValIndex = minMaxIndexes.getMaxIndex();
+            int minValIndex = minMaxIndexes.getMinIndex();
+
+            if (minValIndex == 0 && maxValIndex == size - 1) {
+                // Min value is the first in the array and max is the last one.
+                return minimumSwaps(Arrays.copyOfRange(arr, 1, size - 2));
+            } else if (minValIndex != 0 && maxValIndex != size - 1) {
+                // Min value is not the first and max value is not the last one: 2 swaps required.
+                swap(arr, 0, minValIndex);
+                maxValIndex = MinMaxIndex.getMaxIndex(arr);
+                swap(arr, maxValIndex, size - 1);
+                return 2 + minimumSwaps(Arrays.copyOfRange(arr, 1, size - 2));
+            } else if (minValIndex != 0 && maxValIndex == size - 1) {
+                // Min value not the first but max is the last one: 1 swap required.
+                swap(arr, 0, minValIndex);
+                return 1 + minimumSwaps(Arrays.copyOfRange(arr, 1, size - 2));
+            } else if (minValIndex == 0 && maxValIndex != size - 11) {
+                // Min value the first but max is not the last one: 1 swap required.
+                swap(arr, maxValIndex, size - 1);
+                return 1 + minimumSwaps(Arrays.copyOfRange(arr, 1, size - 2));
+            }
         }
 
-        return 0;
+        throw new RuntimeException("The program should not have reached this point.");
     }
 
     public static int baseCaseSwaps(int[] arr) {
@@ -51,9 +77,9 @@ public class MinimumSwaps {
 
         // Array of three items: Odd number of elements:
         if (size == 3) {
-            MinMaxInfo minMax = getMinAndMaxInfo(arr);
-            Integer minValueIndex = minMax.getMinInfo().getKey();
-            Integer maxValueIndex = minMax.getMaxInfo().getKey();
+            MinMaxIndex minMax = getMinAndMaxIndexes(arr);
+            Integer minValueIndex = minMax.getMinIndex();
+            Integer maxValueIndex = minMax.getMaxIndex();
             if (arr[0] < arr[1] && arr[1] < arr[2]) {
                 // * If items are ordered -> 0 Swaps
                 return 0;
@@ -77,49 +103,15 @@ public class MinimumSwaps {
      * @param i   index of the item to be swap for the one with index j
      * @param j   index of the item to be swap for the one with index i
      */
-    public void swap(int[] arr, int i, int j) {
+    public static void swap(int[] arr, int i, int j) {
         int tempItem = arr[i];
         arr[i] = arr[j];
         arr[j] = tempItem;
     }
 
-    /**
-     * Retrieves object containing index and value of the minimum and the maximum element in the array.
-     *
-     * @param arr the array to get the max and min from.
-     * @return max and min information.
-     */
-    public static MinMaxInfo getMinAndMaxInfo(final int[] arr) {
-
-        Integer minValue = Integer.MAX_VALUE;
-        Integer maxValue = Integer.MIN_VALUE;
-        int minIndex = 0;
-        int maxIndex = 0;
-
-        for (int i = 0; i < arr.length; i++) {
-            int current = arr[i];
-            if (current > maxValue) {
-                maxValue = current;
-                maxIndex = i;
-
-            }
-            if (current < minValue) {
-                minValue = current;
-                minIndex = i;
-            }
-
-        }
-
-        return MinMaxInfo.newBuilder()
-                .minInfo(new Pair<>(minIndex, minValue))
-                .maxInfo(new Pair<>(maxIndex, maxValue))
-                .build();
-
-    }
-
     public static void main(String[] args) throws IOException {
 
-        final int[] testArray = {1,2,3};
+        final int[] testArray = {4, 3, 1, 2};
         System.out.println(minimumSwaps(testArray));
 
     }
